@@ -1,0 +1,60 @@
+# This chart runs one Kafka node in combined broker/controller KRaft mode.
+# It does not provide a production Kafka cluster or high availability.
+replicaCount: 1
+
+image:
+  repository: apache/kafka
+  tag: "4.3.1"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 9092
+
+kafka:
+  nodeId: 1
+  topicPartitions: 1
+  offsetsTopicReplicationFactor: 1
+  transactionStateLogReplicationFactor: 1
+  transactionStateLogMinIsr: 1
+  groupInitialRebalanceDelayMs: 0
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 768Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# The official Apache Kafka image runs as a non-root user.
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+podSecurityContext:
+  fsGroup: 1000
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 6
+
+readinessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 6
+
+terminationGracePeriodSeconds: 60
