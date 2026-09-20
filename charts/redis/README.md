@@ -259,6 +259,42 @@ The generated configuration is mounted at:
 
 Authentication is deliberately not written to the ConfigMap. When enabled, the password is supplied through the `REDIS_PASSWORD` environment variable and passed to `redis-server` at startup.
 
+### RAM, persistence, and performance
+
+Redis remains primarily an in-memory data store even when persistence is enabled.
+
+With the default configuration:
+
+```yaml
+persistence:
+  enabled: true
+
+redis:
+  appendonly: "yes"
+```
+
+the behavior is:
+
+```text
+Active Redis data: RAM
+Persistence files: /data on the PVC
+Normal reads and writes: primarily served from RAM
+Restart recovery: AOF on disk is replayed into RAM
+```
+
+The PVC does not turn Redis into a disk-based database. It stores persistence files that Redis can use to recover its in-memory dataset.
+
+Persistence improves durability but is not a performance optimization. It can add some write overhead because Redis also writes AOF data to storage. Redis startup can take longer after a restart because the AOF must be read and replayed into memory. The exact impact depends on the workload and storage system.
+
+The practical tradeoff is:
+
+| Mode | Normal operation | Restart behavior |
+|---|---|---|
+| Persistence enabled | Redis serves data primarily from RAM; writes also create persistence data | Data can be recovered from the PVC |
+| Persistence disabled | Redis serves data from RAM without durable files | All data is lost when the pod is removed |
+
+Keep persistence enabled when Redis stores sessions, queues, jobs, or other data that should survive pod replacement. Disable it only when Redis is a disposable cache and the application can rebuild all values.
+
 ### Service
 
 ```yaml
@@ -422,6 +458,55 @@ helm upgrade --install redis . -n infrastructure -f production-values.yaml
 ```
 
 Changing the image version, Redis configuration, or storage settings can affect existing data and availability. Review StatefulSet and PVC changes carefully before upgrading.
+
+## Uninstalling Redis and PVC behavior
+
+Uninstall the Helm release with:
+
+```powershell
+helm uninstall redis -n infrastructure
+```
+
+When persistence is enabled, the StatefulSet uses a `volumeClaimTemplate`. The StatefulSet, Service, ConfigMap, and chart-managed Secret are removed, but the PVC normally remains:
+
+```text
+StatefulSet deleted
+Service deleted
+ConfigMap deleted
+Secret deleted
+PVC remains
+Redis data remains on the PVC
+```
+
+Check for the remaining PVC:
+
+```powershell
+kubectl get pvc -n infrastructure
+```
+
+A PVC name may look similar to:
+
+```text
+redis-data-redis-sudo0x-redis-0
+```
+
+Keeping the PVC is safer because it helps prevent accidental data loss. If the chart is installed again with compatible names and settings, the existing storage may be available to the recreated Redis pod.
+
+To permanently delete the Redis data, first identify the correct PVC:
+
+```powershell
+kubectl get pvc -n infrastructure
+```
+
+Then delete only that PVC:
+
+```powershell
+kubectl delete pvc <redis-pvc-name> -n infrastructure
+```
+
+Deleting the PVC may delete the underlying volume depending on the StorageClass reclaim policy. Treat this as a destructive operation.
+
+When `persistence.enabled=false`, the chart uses `emptyDir`. That data is removed when the pod is deleted, so uninstalling the release also removes the Redis data.
 
 ## Validation
 
