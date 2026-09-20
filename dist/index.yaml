@@ -3,7 +3,7 @@ entries:
   sudo0x-redis:
   - apiVersion: v2
     appVersion: "8.2"
-    created: "2026-09-20T11:19:44.730112+07:00"
+    created: "2026-09-20T11:23:25.9778678+07:00"
     description: A simple reusable Redis OSS StatefulSet
     digest: c655a96e04e36819d133e9c02d815a838f00cd698619d013ef37e812d27f6521
     name: sudo0x-redis
@@ -11,4 +11,4 @@ entries:
     urls:
     - https://sudo0x.github.io/helm-charts/sudo0x-redis-0.2.0.tgz
     version: 0.2.0
-generated: "2026-09-20T11:19:44.7291081+07:00"
+generated: "2026-09-20T11:23:25.9778678+07:00"
