@@ -502,4 +502,3 @@ curl -I https://sudo0x.github.io/helm-charts/index.yaml
 helm repo update
 helm search repo sudo0x
 ```
-
