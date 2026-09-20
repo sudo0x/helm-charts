@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sudo0x-redis
+description: A simple reusable Redis OSS StatefulSet
+type: application
+version: 0.2.0
+appVersion: "8.2"

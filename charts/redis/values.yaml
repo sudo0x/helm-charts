@@ -1,0 +1,65 @@
+# Redis OSS is a single instance by default. This chart does not provide HA.
+replicaCount: 1
+
+image:
+  repository: redis
+  tag: "8.2"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+auth:
+  enabled: true
+  # Use an existing Secret instead of creating one.
+  existingSecret: ""
+  existingSecretKey: redis-password
+  password: "change-me"
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+
+redis:
+  appendonly: "yes"
+  maxmemoryPolicy: "noeviction"
+  loglevel: "notice"
+
+service:
+  type: ClusterIP
+  port: 6379
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# The official Redis image uses UID/GID 999 for its redis user.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  allowPrivilegeEscalation: false
+
+podSecurityContext:
+  fsGroup: 999
+
+livenessProbe:
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 6
+
+terminationGracePeriodSeconds: 30
