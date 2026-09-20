@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sudo0x-rabbitmq
+description: A simple single-instance RabbitMQ deployment for development and learning
+type: application
+version: 0.1.0
+appVersion: "4.1"

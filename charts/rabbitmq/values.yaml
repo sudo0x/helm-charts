@@ -1,0 +1,64 @@
+# This chart is a simple single-instance RabbitMQ deployment.
+# It does not provide clustering, quorum replication, or high availability.
+replicaCount: 1
+
+image:
+  repository: rabbitmq
+  tag: "4.1-management"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+auth:
+  # Credentials are used by the official image during first initialization.
+  enabled: true
+  existingSecret: ""
+  usernameKey: username
+  passwordKey: password
+  username: appuser
+  password: "change-me"
+
+service:
+  type: ClusterIP
+  amqpPort: 5672
+  managementPort: 15672
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# The official RabbitMQ image uses the rabbitmq user with UID/GID 999.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  allowPrivilegeEscalation: false
+
+podSecurityContext:
+  fsGroup: 999
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 6
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 10
+  failureThreshold: 6
+
+terminationGracePeriodSeconds: 60
