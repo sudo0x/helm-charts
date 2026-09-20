@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sudo0x-postgres
+description: A simple single-instance PostgreSQL StatefulSet for development and learning
+type: application
+version: 0.1.0
+appVersion: "16"

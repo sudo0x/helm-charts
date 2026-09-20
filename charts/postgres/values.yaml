@@ -1,0 +1,64 @@
+# This chart is a simple single-instance PostgreSQL deployment.
+# It does not provide replication, failover, or high availability.
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "16"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+auth:
+  enabled: true
+  # Use an existing Secret in the release namespace when set.
+  existingSecret: ""
+  usernameKey: username
+  passwordKey: password
+  username: appuser
+  password: "change-me"
+  database: appdb
+
+service:
+  type: ClusterIP
+  port: 5432
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# UID/GID 999 is used by the official PostgreSQL image.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  allowPrivilegeEscalation: false
+
+podSecurityContext:
+  fsGroup: 999
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+terminationGracePeriodSeconds: 60
