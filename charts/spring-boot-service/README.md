@@ -67,7 +67,7 @@ charts/spring-boot-service/
     └── pdb.yaml
 ```
 
-Templates should be added only after the design and values have been reviewed.
+The initial chart implementation now includes a Deployment, Service, ServiceAccount, and optional Ingress. Additional application configuration features can be added incrementally.
 
 ## Initial scope
 
@@ -92,6 +92,39 @@ The first implementation should support:
 - Optional HorizontalPodAutoscaler.
 - Optional PodDisruptionBudget.
 - Node selector, tolerations, and affinity.
+
+## Ingress
+
+Ingress is disabled by default. Enable it only when an Ingress controller is installed in the cluster:
+
+```yaml
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: orders.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+```
+
+Install the official `ingress-nginx` controller separately. This application chart creates only the routing resource; it does not install or manage the controller.
+
+For local development, add the hostname to the client machine's hosts file or use a DNS record that resolves to the controller's external address. For production, configure a real DNS name and TLS certificate.
+
+Example:
+
+```bash
+helm upgrade --install orders-service \
+  charts/spring-boot-service \
+  --namespace applications-dev \
+  --create-namespace \
+  --set image.repository=ghcr.io/sudo0x/orders-service \
+  --set image.tag=1.0.0 \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0].host=orders.local
+```
 
 The first implementation should remain simple. Do not add every platform feature before a basic service can be deployed successfully.
 
@@ -402,4 +435,3 @@ The chart should provide safe defaults, but each microservice should explicitly 
 - Secret references.
 - Exposure requirements.
 - Scaling requirements.
-

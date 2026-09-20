@@ -1,0 +1,58 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  tag: "1.27"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: http
+
+containerPort: 8080
+
+probes:
+  enabled: false
+  path: /actuator/health
+  initialDelaySeconds: 20
+  periodSeconds: 10
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+
+terminationGracePeriodSeconds: 30
